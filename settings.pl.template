@@ -35,6 +35,79 @@ $beemauth = "abc123";  # CHANGEME to your personal beeminder auth token
   #}
 );
 
+
+## CONFIG ##
+# Add more tags when merging files
+
+# Date Range tags, for trips
+# NB: an additional tag, 'abroad', is added for all of these
+#     which might be less appropriate if you use this to tag events
+# TODO dates, not timestamps
+#      right now is `date +%s`
+#      next week is `date -v+7d +%s`
+#      OR, look at your logfile post-trip and use the first & last pings
+# TODO multiple tags? i.e. reverse so it's [ first, final, [tagset] ]
+#      That would mean I can avoid hardcoding 'abroad' in merge.pl
+@daterange_tags = (
+  # format triples: [ 'destination', first_ts, final_ts ], 
+  [ 'netherlands', 1358166624, 1358365256 ],
+  [ 'netherlands', 1358757945, 1359028825 ],
+  [ 'netherlands', 1360164883, 1360274951 ],
+  [ 'netherlands', 1361880310, 1362077437 ],
+  [ 'netherlands', 1362501437, 1362680810 ],
+  [ 'netherlands', 1363093877, 1363288925 ],
+  [ 'edmonton',    1376381479, 1377625840 ],
+  [ 'portland',    1377625841, 1377871618 ],
+  [ 'netherlands', 1378816349, 1379016707 ],
+  [ 'paris',       1380034862, 1380233632 ],
+  [ 'paris',       1384777825, 1384888593 ],
+  [ 'manchester',  1396787002, 1396894201 ],
+  [ 'paris',       1397569700, 1398023063 ],
+  [ 'cardiff',     1398776760, 1398879163 ],
+  [ 'copenhagen',  1407653148, 1408302352 ],
+  [ 'manchester',  1414242121, 1414446561 ],
+);
+
+# postprocess time-periods 
+# sorted array of [ first_ts, 'tag' ], [ final_ts + 1 second, undef ]
+@merge_tags = ();
+foreach my $aref ( sort { $a->[1] <=> $b->[2] } @daterange_tags ) { 
+  push @merge_tags, [ $aref->[1], $aref->[0] ], [ $aref->[2]+1, undef ];
+}
+
+
+# categorise or add correct tags
+# n.b. these get remapped, so you can't have one tag imply 2 others
+# but you *can* add a category tag for a category tag
+%category_tags = (
+  # format:
+  # cat_tag => [ 'tag1', 'tag2' ],
+
+  # conferences
+  conf => [ 'bcs2013', 'eac2013', 'eac2014', 'efma2013', 'idc2014', 'int2014', 'june2013', 'unicom', 'unicom2013' ],
+
+  # fitness
+  fit => [ 'flex', 'gym', 'run', 'salsa', 'swim', 'trapeze', 'walk' ],
+
+  # professional development
+  profdev => [ 'gurteen', 'krypton', 'scio', 'pkm', 'anki' ],
+
+  # data fixes
+  june2013 => [ 'june2023' ],
+  bmndr    => [ 'ebmndr', 'knbmndr', 'tbmndr', 'beemsup', 'beemad' ],
+  speak    => [ 'speaking' ],
+
+);
+
+# post-process category tags
+%merge_tags = ();
+while ( my ($cat_tag, $tag_array) = each %category_tags) {
+  for my $tag ( @$tag_array ) {
+    $merge_tags{ $tag } = $cat_tag;
+  }
+}
+
+
 # Pings from more than this many seconds ago get autologged with tags "afk" and 
 # "RETRO". (Pings can be overdue either because the computer was off or tagtime 
 # was waiting for you to answer a previous ping. If the computer was off, the 

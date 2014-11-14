@@ -59,6 +59,28 @@ for my $logfile (@ARGV) {
       $errstr .= "NON-MONOTONE:\n$line";
       next;
     }
+
+    # inject tag categories here
+    for my $tag (@tags) {
+      # recursion because the cat_tag could have a cat_tag of its own
+      while ( exists $merge_tags{ $tag } ) {
+        my $cat_tag = $merge_tags{ $tag };
+        $line =~ s/\b$tag\b/$tag $cat_tag/ unless $line =~ /\b$cat_tag\b/;
+        $tag = $cat_tag;
+      }
+    }
+
+    # inject trip tags here
+    # FIXME this seems wildly inefficient
+    for my $aref ( @merge_tags ) {
+      $trip = $aref if $aref->[0] <= $ts;
+    }
+    if ( $trip->[1] ) {
+      for my $tag ( $trip->[1], 'abroad' ) {
+        $line  =~ s/^/$tag / unless $line =~ /\b$tag\b/;
+      }
+    }
+
     $prevts = $ts;
     if($ts < $earliest || $earliest == -1) { $earliest = $ts; }
     if($ts > $latest)                      { $latest   = $ts; }

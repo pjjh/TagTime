@@ -5,8 +5,15 @@
 # As a side effect, generate a .bee file from the tagtime log, used as a cache
 # to avoid calling the Beeminder API if the tagtime log changed but it did not 
 # entail any changes relevant to the given Beeminder graph.
+#
+# DANGER This will use the settings in bmndr.settings.pl if it exits
+# DANGER If you have Beeminder settings also in your settings.pl
+# DANGER Then ping.pl will call this but use bmndr.settings.pl config
 
 require "$ENV{HOME}/.tagtimerc";
+if ( -f "${path}bmndr.settings.pl" ) {
+  require "${path}bmndr.settings.pl";
+}
 require "${path}util.pl";
 require "${path}beemapi.pl";
 use Data::Dumper; $Data::Dumper::Terse = 1;
@@ -243,7 +250,7 @@ my $r = ref($crit);
 if   ($r eq "")       { print "w/ tag $crit";                        }
 elsif($r eq "ARRAY")  { print "w/ tags in {", join(",",@$crit), "}"; }
 elsif($r eq "Regexp") { print "matching $crit";                      }
-elsif($r eq "CODE")   { print "satisfying lambda";                   }
+elsif($r eq "CODE")   { print "satisfying lambda for '$slug'";       }
 else                  { print "(unknown-criterion: $crit)";          }
 print "\n";
 

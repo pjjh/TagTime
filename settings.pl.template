@@ -13,6 +13,8 @@ $cygwin = __CYGWIN__;  # CHANGEME to 1 if you're using windows/cygwin.
 $ED = "__ED__ +";  # CHANGEME if you don't like vi (eg: /usr/bin/pico)
 $XT = "__XT__";    # CHANGEME to your path to xterm
 
+# WARNING: don't configure your Beeminder settings here if using bmndr.merge.sh
+
 # Get your personal Beeminder auth token (after signing in) from
 #   https://www.beeminder.com/api/v1/auth_token.json
 $beemauth = "abc123";  # CHANGEME to your personal beeminder auth token

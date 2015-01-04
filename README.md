@@ -5,6 +5,7 @@
 * [added category tags and time-range tags to merge.pl](https://github.com/pjjh/TagTime/commit/7e452d8d08a28fccef75d9c5a4cd818019b5ac48)
 * [improved formatting and filter options](https://github.com/pjjh/TagTime/commit/c3b7732a091900a5e28f806a912068d9680189b3)
 * [idletime utility prints number of seconds of inactivity](https://github.com/pjjh/TagTime/commit/2ae50389cf3349dd310511d89a6287814ddca62d)
+* updated merge.pl to not enforce monotonicity and to merge ping responses
 
 # Related Discussions on the [Beeminder forum](http://forum.beeminder.com)
 
@@ -16,7 +17,7 @@
 # TODO - Shout if any are of immediate interest
 
 * collate discussions with Mary & Alessandro
-* upload non-monotonic merging patch
+* <strike>upload non-monotonic merging patch **DONE**</strike>
 * upload separate Beeminder merge script
 * upload Prowl App ping script
 

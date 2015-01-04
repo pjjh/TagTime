@@ -35,6 +35,7 @@
 BEGIN { require "$ENV{HOME}/.tagtimerc"; }
 require "util.pl";
 
+
 die "USAGE: $0 logfile+\n" if @ARGV < 1;
 
 my $e = 0;         # number of lines with parse errors
@@ -44,6 +45,7 @@ my $latest = 0;    # latest timestamp in all the log files
 my %th;            # maps logfile+timestamp to tags for that log for that ping
 my %alltimes;      # maps all timestamps to 1
 for my $logfile (@ARGV) {
+  warn "processing $logfile\n"; # unless --quiet
   open(LOG, $logfile) or die;
   $prevts = 0; # remember the previous timestamp
   $trip = undef; 
@@ -55,10 +57,15 @@ for my $logfile (@ARGV) {
     }
     my @tags = split(/\s+/, $line);
     my $ts = shift(@tags);
+    $line =~ s/^\d+\s+//;
+    chomp($line);
+    # monotonicity check; but prowl pings can be answered retrospectively out of order
+    # TODO add --mono flag in case anyone actually wants an error instead of a tag
     if($ts <= $prevts) {
-      $e++;
-      $errstr .= "NON-MONOTONE:\n$line";
-      next;
+       $line .= ' NONMONOTONE';
+#      $e++;
+#      $errstr .= "NON-MONOTONE:\n$line";
+#      next;
     }
 
     # inject tag categories here
@@ -85,9 +92,9 @@ for my $logfile (@ARGV) {
     $prevts = $ts;
     if($ts < $earliest || $earliest == -1) { $earliest = $ts; }
     if($ts > $latest)                      { $latest   = $ts; }
-    $line =~ s/^\d+\s+//;
-    chomp($line);
-    $th{$logfile.$ts} = $line;
+    # concatenate lines in the event of duplicate responses
+    # FIXME it'd be better to merge the tags, or to omit any entries marked RETRO
+    $th{$logfile.$ts} .= $line;
     $alltimes{$ts} = 1;
   }  
   close(LOG);

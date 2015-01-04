@@ -46,6 +46,7 @@ my %alltimes;      # maps all timestamps to 1
 for my $logfile (@ARGV) {
   open(LOG, $logfile) or die;
   $prevts = 0; # remember the previous timestamp
+  $trip = undef; 
   while($line = <LOG>) {
     if(!parsable($line)) {
       $e++;
@@ -75,7 +76,7 @@ for my $logfile (@ARGV) {
     for my $aref ( @merge_tags ) {
       $trip = $aref if $aref->[0] <= $ts;
     }
-    if ( $trip->[1] ) {
+    if ( $trip and $trip->[1] ) {
       for my $tag ( $trip->[1], 'abroad' ) {
         $line  =~ s/^/$tag / unless $line =~ /\b$tag\b/;
       }

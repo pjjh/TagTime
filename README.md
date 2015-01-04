@@ -1,3 +1,28 @@
+**n.b. THIS IS A FORK of [official TagTime](https://github.com/dreeves/TagTime), so most of the files will be identical!**
+
+# Notable Additions
+
+* [added category tags and time-range tags to merge.pl](https://github.com/pjjh/TagTime/commit/7e452d8d08a28fccef75d9c5a4cd818019b5ac48)
+* [improved formatting and filter options](https://github.com/pjjh/TagTime/commit/c3b7732a091900a5e28f806a912068d9680189b3)
+* [idletime utility prints number of seconds of inactivity](https://github.com/pjjh/TagTime/commit/2ae50389cf3349dd310511d89a6287814ddca62d)
+
+# Related Discussions on the [Beeminder forum](http://forum.beeminder.com)
+
+* [A good approach to merge TagTime logs](http://forum.beeminder.com/t/a-good-approach-to-merge-tagtime-logs/289) 
+* [Tagging Time Spent](http://forum.beeminder.com/t/tagging-time-spent/232)
+* [Simplifying Beeminder](http://forum.beeminder.com/t/simplifying-beeminder/230)
+
+
+# TODO - Shout if any are of immediate interest
+
+* collate discussions with Mary & Alessandro
+* upload non-monotonic merging patch
+* upload separate Beeminder merge script
+* upload Prowl App ping script
+
+
+# ---Official README---
+
 To determine how you spend your time, TagTime literally randomly samples you.
 At random times it pops up and asks what you're doing *right at that moment*.
 You answer with tags.

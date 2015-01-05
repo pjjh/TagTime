@@ -13,7 +13,14 @@
 # Relies on newstyle formatted output from cntpings.pl
 # Parameters intended for the .sh must appear before ones for the .pl
 # --help tails the output from cntpings.pl, to include relevant usage
+# Doesn't check for incompatible options
+# --only only works with simple tag lists, not full expressions
 # TagTime :)
+
+# Attempting to manage a Taxonomy demands monitoring for:
+# - tags never seen before
+# - tags not seen for some time
+# - tags with the wrong year e.g. eac2014
 
 ## CONFIG ##
 
@@ -27,6 +34,7 @@ FILTER='afk|off|RETRO|prowl'
 # A predefined tag set, e.g. for notionally productive time
 # TODO somehow reuse bmndr tags defined in settings.pl
 NWO='(nnj|gc|profdev|bmndr|ntwk|tock|mit|conf|fv|dj) & !(social|idle|avoid)'
+
 # Exclude these percentages by default 
 SHARE='01234'
 
@@ -38,6 +46,7 @@ if [ "$1" = '--help' ] ; then
   echo "    (automatically filters $FILTER unless --all)"
   echo "Available options:"
   echo "    --help: this text"
+  echo "    --only: only display the named tags"
   echo "    --nwo:  report on my predefined tag set"
   echo "    --all:  report on all tags regardless of % share"
   echo "    --zero: only include tags with at least 0% share (i.e. --all)"
@@ -89,6 +98,11 @@ while true ; do
   if [ "$1" = '--nwo' ] ; then
     TAGS="$NWO"
     shift
+  elif [ "$1" = '--only' ] ; then
+    ONLY="TRUE"
+    SHARE=''
+    FILTER=''
+    shift
   elif [ "$1" = '--all' -o "$1" = '--zero' ] ; then
     SHARE=''
     FILTER=''
@@ -137,57 +151,21 @@ while true ; do
   fi
 done
 
+# create the ONLY filter from the passed-in tagset
+if [ -n "$ONLY" ] ; then 
+  ONLY=$(echo "$@" | sed -e 's/ *$//' -e 's/ /|/g')
+fi
+
 
 if   [ -n "$SHARE" -a -n "$FILTER" ] ; then
   cntpings.pl -v "$LOG" $START "$TAGS" "$@" | grep -vE " [$SHARE]% " | grep -vE "$FILTER"
 elif [ -z "$SHARE" -a -n "$FILTER" ] ; then
   cntpings.pl -v "$LOG" $START "$TAGS" "$@" |                          grep -vE "$FILTER"
 elif [ -n "$SHARE" -a -z "$FILTER" ] ; then
-  cntpings.pl -v "$LOG" $START "$TAGS" "$@" | grep -vE " [$SHARE]% " 
+  cntpings.pl -v "$LOG" $START "$TAGS" "$@" | grep -vE " [$SHARE]% "
 else
-  cntpings.pl -v "$LOG" $START "$TAGS" "$@"
+  cntpings.pl -v "$LOG" $START "$TAGS" "$@" | grep -wE "$ONLY"
 fi
 
 exit
-
-
-if [ "$1" = '--all' ] ; then
-  shift
-  cntpings.pl -v "$LOG" "$@" 
-elif [ "$1" = '--zero' ] ; then
-  shift
-  SHARE='0'
-  cntpings.pl -v "$LOG" "$@" | grep -vE ' 0% ' | grep -vE "$FILTER"
-elif [ "$1" = '--one' ] ; then
-  shift
-  SHARE='01'
-  cntpings.pl -v "$LOG" "$@" | grep -vE ' [01]% ' | grep -vE "$FILTER"
-elif [ "$1" = '--week' ] ; then
-  shift
-  START="-s $(date -v-7d +%C%y-%m-%d)"
-  cntpings.pl -v "$LOG" -s $(date -v-7d +%C%y-%m-%d) "$@" | grep -vE ' [01234]% ' | grep -vE "$FILTER"
-elif [ "$1" = '--month' ] ; then
-  shift
-  cntpings.pl -v "$LOG" -s $(date -v-30d +%C%y-%m-%d) "$@" | grep -vE ' [01234]% ' | grep -vE "$FILTER"
-elif [ "$1" = '--quarter' ] ; then
-  shift
-  cntpings.pl -v "$LOG" -s $(date -v-90d +%C%y-%m-%d) "$@" | grep -vE ' [01234]% ' | grep -vE "$FILTER"
-else
-  cntpings.pl -v "$LOG" "$@" | grep -vE ' [01234]% ' | grep -vE "$FILTER"
-fi
-
-
-# This finds all tags registered in the last week...
-# cntpings.sh --all -s $(date -v-7d +%C%y-%m-%d) | awk '{print $1}' | grep -v '[:*+]' | sort
-
-# The harder question is what to do with this, and how to see changes.
-
-# Taxonomy demainds monitoring for:
-# - tags never seen before
-# - tags not seen for some time
-# - tags with the wrong year(?)
-
-# man comm
-
-
 

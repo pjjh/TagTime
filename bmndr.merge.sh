@@ -12,8 +12,10 @@
 #          Copyright 2014 Philip Hellyer
 
 # DEPENDENCIES & LIMITATIONS
-# - copy settings.pl.template to bmndr.settings.pl
-# - move your Beeminder settings out of settings.pl into that one
+# - BACKUP your TagTime logs until you're sure this works
+# - COPY bmndr.settings.pl.template to bmndr.settings.pl
+# - MOVE your Beeminder settings out of settings.pl into that
+# TODO check that this works cross-platform. Works on my Mac.
 
 # CONFIG
 
@@ -45,8 +47,7 @@ for f in "$@"
 do
 	if [ ! -s "$f" ] ; then /bin/echo "Can't open file '$f'" ; exit 1 ; fi
 
-	# eliminate non-ping lines, misordered pings
-	# Note: multiple replies to prowl cause a problem not solved by the sort, need to be handled in merge.pl
+	# eliminate non-ping lines, fix misordered pings
 	/usr/bin/grep -E '^\d{10}\s' "$f" | /usr/bin/grep -v 'MISSING' | /usr/bin/sort > "$f.$$"
 
 	if [ ! -s "$f.$$" ] ; then /bin/echo "Can't open file '$f.$$'" ; exit 1 ; fi
@@ -88,6 +89,7 @@ if [ $? -eq 0 ] ; then
   # send to beeminder if the merge succeeded
   echo "Updating Beeminder graphs"
   /usr/bin/perl -e 'require "${path}bmndr.settings.pl"; print join "\n", keys %beeminder;' | /usr/bin/xargs -n 1 ./beeminder.pl "$MLOG"
+
   # warn about any MISSING or merged pings
   /usr/bin/grep -w MISSING "$MLOG"
   /usr/bin/tail -1000 "$MLOG" | /usr/bin/grep \+

@@ -5,7 +5,32 @@
 $usr = "__USER__";   # CHANGEME to your username
 $path = "__PATH__";  # CHANGEME to your path to tagtime
         if($path !~ /\/$/) { $path.="/"; }
-$logf = "$path$usr.log";  # log file for pings
+
+use Sys::Hostname;
+if ( 1 ) {  # CHANGE to 0 to enable host-specific file naming, 1 to disable
+  $logf = "$path$usr.log";  # log file for pings
+} else {
+  # log.txt ending can be useful for aggregation scripts *.log.txt
+  # the .txt is because ifttt dropbox appending forces the .txt suffix
+  $host = get_hostname;
+  $logf = "$path$usr.$host.log.txt";  # log file for pings
+}
+
+
+# CHANGEME a map of host names to short names
+# the lookup code will also check for prefixes
+# running in Terminal will reveal what host name it finds
+# if you ever get a log file called 'nohost', that's what happened
+%hostmap = (
+    'Mac-mini.local'       => 'home',
+    'Philips-Mac.local'    => 'work',
+    'MacBook-Air.local'    => 'mba',
+    'macbook'              => 'mba',
+    'macbook-air'          => 'mba',
+    'macbook-air.lan'      => 'mba',
+    'macbook-air.home'     => 'mba',
+    'macbook-air.default'  => 'mba',
+    );
 
 # If you're using windows, you'll need cygwin and to set this flag to 1:
 $cygwin = __CYGWIN__;  # CHANGEME to 1 if you're using windows/cygwin.
@@ -36,6 +61,36 @@ $beemauth = "abc123";  # CHANGEME to your personal beeminder auth token
   # return shift() =~/\bworkout\b/ && $now[6] == 2;
   #}
 );
+
+
+sub get_hostname {
+ # looped because hostname sometimes gets confused
+  while ( 1 ) {
+    $host = hostname;
+    last if $host;
+    sleep 1;
+  }
+  if ( $hostmap{$host} ) {
+    $host = $hostmap{$host};
+  }
+  elsif ( $host ) {
+    $host =~ /^([\w\d]+).*/;
+    my $prefix = $1;
+    if ( exists $hostmap{$prefix} ) {
+      $host = $hostmap{$prefix};
+    }
+    else {
+      print STDERR "unmapped host: '$host', using '$prefix'\n";
+      $host = $prefix;
+    }
+  }
+  else {
+    print STDERR "no host\n";
+    $host = 'nohost';
+  }
+  return $host;
+}
+
 
 
 ## CONFIG ##

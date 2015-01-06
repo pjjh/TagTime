@@ -7,6 +7,7 @@
 * [idletime utility prints number of seconds of inactivity](https://github.com/pjjh/TagTime/commit/2ae50389cf3349dd310511d89a6287814ddca62d)
 * updated merge.pl to not enforce monotonicity and to merge ping responses
 * added bmndr.merge.pl and associated files
+* added host-specific log file names to settings.pl.template
 
 # Related Discussions on the [Beeminder forum](http://forum.beeminder.com)
 
@@ -17,7 +18,7 @@
 
 # TODO - Shout if any are of immediate interest
 
-* collate discussions with Mary & Alessandro
+* collate discussions with Mary & Alessandro & Noah
 * <strike>upload non-monotonic merging patch **DONE**</strike>
 * <strike>upload separate Beeminder merge script **DONE**</strike>
 * upload Prowl App ping script

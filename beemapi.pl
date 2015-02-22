@@ -5,7 +5,7 @@
 #   https://www.beeminder.com/api/v1/auth_token.json
 # And set a global variable like $beemauth = "abc123";
 # (That's already done in TagTime settings but if you're using this elsewhere
-# you'll need to set $beemauth.)
+# you'll need to set $beemauth OR put a copy of bmndrrc in your home directory)
 
 use LWP::UserAgent;  # tip: run 'sudo cpan' and at the cpan prompt do 'upgrade'
 use JSON;            # then 'install LWP::UserAgent' and 'install JSON' etc
@@ -13,11 +13,27 @@ use HTTP::Request::Common;  # pjf recomends cpanmin.us
 use Data::Dumper; $Data::Dumper::Terse = 1;
 $beembase = 'https://www.beeminder.com/api/v1/';
 
+if ( not $beemauth or $beemauth eq 'abc123' ) {
+  if ( -f "$ENV{HOME}/.bmndrrc" ) {
+    require Config::Tiny or die "Config::Tiny not installed\n";
+    $bmndrrc = Config::Tiny->read( "$ENV{HOME}/.bmndrrc" );
+    $beemauth = $bmndrrc->{'account'}{'auth_token'};
+  }
+  else {
+    die "Either define \$beemauth or configure ~\.bmndrrc\n";
+  }
+}
+if ( not $beemauth ) {
+  die "Couldn't find an API auth_token\n";
+}
+
+
 # Delete datapoint with given id for beeminder.com/u/g
 sub beemdelete { my($u, $g, $id) = @_;
   my $ua = LWP::UserAgent->new;
   my $uri = $beembase . 
             "users/$u/goals/$g/datapoints/$id.json?auth_token=$beemauth";
+#  warn "trying to delete $uri";
   my $resp = $ua->delete($uri);
   beemerr('DELETE', $uri, {}, $resp);
 }
@@ -65,6 +81,18 @@ sub beemupdate { my($u, $g, $id, $t, $v, $c) = @_;
   beemerr('PUT', $uri, $data, $resp);
 }
 
+
+# Fetch all the datapoints for beeminder.com/u/g
+sub beemuserfetch { my($u) = @_;
+  my $ua = LWP::UserAgent->new;
+  #$ua->timeout(30); # give up if no response for this many seconds; default 180
+  my $uri = $beembase .
+            "users/$u.json?auth_token=$beemauth";
+  my $resp = $ua->get($uri);
+  beemerr('GET', $uri, {}, $resp);
+  return decode_json($resp->content);
+}
+
 # Takes request type (GET, POST, etc), uri string, hashref of data arguments, 
 # and response object; barfs verbosely if problems. 
 # Obviously this isn't the best way to do this.
@@ -76,6 +104,8 @@ sub beemerr { my($rt, $uri, $data, $resp) = @_;
     exit 1;
   }
 }
+
+
 
 1; # when requiring a library in perl it has to return 1.
 
